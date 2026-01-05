@@ -16,7 +16,7 @@ import { DialogClose } from '@radix-ui/react-dialog';
 
 interface ReviewWorkerDialogProps {
   jobId: string;
-  awardedWorkerUid: string;
+  awardedWorkerUid?: string;
   parent: string;
   children?: React.ReactNode;
 }
@@ -76,7 +76,7 @@ const ReviewWorkerDialog: React.FC<ReviewWorkerDialogProps> = ({
                   key={star}
                   onClick={() => setRating(star)}
                   className={`h-8 w-8 rounded-full ${
-                    rating >= star ? 'bg-yellow-500' : 'bg-gray-300'
+                    rating! >= star ? 'bg-yellow-500' : 'bg-gray-300'
                   }`}
                 >
                   {star}

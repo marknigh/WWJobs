@@ -35,7 +35,6 @@ import WorkerUnApply from '@/components/WorkerUnApply';
 import { Switch } from '@/components/ui/switch';
 import SpinnerCircle from '@/components/SpinnerCircle';
 import { useMediaQuery } from 'react-responsive';
-import { Card, CardContent } from '@/components/ui/card';
 import JobApplicants from '@/components/JobApplicants'; // Import the new child component
 import { Job } from '@/types/models'; // Import the Job interface
 import WorkerJobListSmallScreen from './WorkerJobListSmallScreen'; // Import the new component

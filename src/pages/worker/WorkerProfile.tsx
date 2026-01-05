@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { auth, db, storage } from '@/lib/firebase-config';
+import { db, storage } from '@/lib/firebase-config';
 import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import {
   getDownloadURL,
@@ -34,10 +34,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SanitizePicture } from '@/lib/SanitizePicture';
 import { DateTimePicker } from '@/components/DateTimePicker';
-import { Worker } from '@/types/models';
+import { Worker, WorkerFormData } from '@/types/models';
 import { Label } from '@/components/ui/label';
 
 const profileSchema = z.object({
+  id: z.string(),
+  dateJoined: z.date(),
   email: z.string().email({ message: 'Invalid email address' }),
   name: z.string().min(1, { message: 'Name is required' }),
   address: z.string().min(1, { message: 'Address is required' }),
@@ -52,10 +54,11 @@ const profileSchema = z.object({
   dob: z.date(),
   school: z.string().min(1, { message: 'School is required' }),
   notes: z.string().min(1, { message: 'Notes are required' }),
+  photoURL: z.string(),
 });
 
 export default function WorkerProfile() {
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<Worker>({
     id: '',
     dateJoined: Timestamp.fromDate(new Date()),
@@ -70,7 +73,7 @@ export default function WorkerProfile() {
     pet: false,
     home: false,
     gender: '',
-    dob: new Date(),
+    dob: Timestamp.now(),
     school: '',
     notes: '',
     photoURL: '',
@@ -78,9 +81,8 @@ export default function WorkerProfile() {
   const [loading, setLoading] = useState(true);
   const { authUser, authLoading } = useFirebaseAuth();
   const { toast } = useToast();
-  const form = useForm({
+  const form = useForm<WorkerFormData>({
     resolver: zodResolver(profileSchema),
-    defaultValues: profile,
   });
 
   useEffect(() => {
@@ -90,11 +92,18 @@ export default function WorkerProfile() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const profileData = docSnap.data();
-          profileData.dob = profileData.dob?.toDate() || new Date();
-          console.log('🚀 ~ fetchProfile ~ profileData:', profileData);
-          setProfile(profileData as Worker);
-          form.reset(profileData as Worker);
+          const workerData = docSnap.data() as Worker;
+
+          // Convert Worker to WorkerFormData for the form
+          const formData: WorkerFormData = {
+            ...workerData,
+            dob: workerData.dob?.toDate() || new Date(),
+            dateJoined: workerData.dateJoined?.toDate() || new Date(),
+          };
+
+          console.log('🚀 ~ fetchProfile ~ formData:', formData);
+          setProfile(workerData);
+          form.reset(formData);
         } else {
           console.log('No such document!');
         }
@@ -112,7 +121,7 @@ export default function WorkerProfile() {
     if (file) {
       try {
         const fileOk = await SanitizePicture(event.target.files[0]);
-        if (fileOk) {
+        if (fileOk && authUser) {
           const imageRef = storageRef(storage, 'userImages/' + authUser.uid);
           await uploadBytes(imageRef, file);
           const downloadURL = await getDownloadURL(imageRef);
@@ -136,20 +145,26 @@ export default function WorkerProfile() {
   };
 
   const handleAvatarClick = () => {
-    console.log(fileInputRef.current);
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
-  const handleSubmit = async (data: Worker) => {
+  const handleSubmit = async (data: WorkerFormData) => {
     try {
-      // convert DOB to timestamp
-      data.dob = new Date(data.dob);
-      const profileRef = doc(db, 'Users', authUser.uid);
-      await updateDoc(profileRef, data);
-      toast({
-        title: 'Profile Updated',
-        description: new Date().toLocaleString(),
-      });
+      // Convert WorkerFormData to Worker for Firebase
+      if (authUser) {
+        const workerData: Partial<Worker> = {
+          ...data,
+          dob: Timestamp.fromDate(data.dob),
+          dateJoined: Timestamp.fromDate(data.dateJoined),
+        };
+
+        const profileRef = doc(db, 'Users', authUser.uid);
+        await updateDoc(profileRef, workerData);
+        toast({
+          title: 'Profile Updated',
+          description: new Date().toLocaleString(),
+        });
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({

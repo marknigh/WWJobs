@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { db } from '@/lib/firebase-config';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 interface ParentArchiveJobProps {
   jobId: string;

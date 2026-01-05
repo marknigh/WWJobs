@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router';
 import { Pickaxe, Home, User, List, Moon, Sun } from 'lucide-react';
 import {
@@ -22,13 +22,13 @@ import HeaderPathName from './HeaderPathName';
 export default function ParentSidebar() {
   const location = useLocation();
   const { setTheme } = useTheme();
-  const [isDarkMode, setIsDarkMode] = useState('dark');
+  const [isDarkMode, setIsDarkMode] = useState<string>('dark');
   const isActive = (path: string) => location.pathname === path;
 
   const toggleDarkLightMode = () => {
     const newTheme = isDarkMode ? 'light' : 'dark';
     setTheme(newTheme);
-    setIsDarkMode(!isDarkMode);
+    setIsDarkMode(String(!isDarkMode));
   };
 
   return (

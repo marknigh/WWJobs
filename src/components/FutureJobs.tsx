@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   collection,
   query,
@@ -46,8 +46,8 @@ export default function FutureJobs({ id }: { id: string }) {
         const querySnapshot = await getDocs(jobsQuery);
         const jobsData = querySnapshot.docs
           .map((doc) => ({
-            id: doc.id, // Include the document ID
             ...(doc.data() as Job),
+            id: doc.id, // Include the document ID
           }))
           .filter((job: Job) => !job.applied?.includes(id)); // Exclude jobs where the worker has already applied
         setJobs(jobsData);

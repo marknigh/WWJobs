@@ -11,7 +11,7 @@ function App() {
     onMessage(messaging, (payload) => {
       console.log('Foreground message received:', payload);
       if (payload.notification) {
-        new Notification(payload.notification.title, {
+        new Notification(payload.notification.title || 'Notification', {
           body: payload.notification.body,
           icon: payload.notification.icon,
         });
@@ -62,7 +62,7 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+    <ThemeProvider>
       <Toaster />
       <Router>
         <div className="min-h-screen bg-background text-foreground">

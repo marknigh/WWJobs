@@ -17,42 +17,34 @@ import { useSearchParams } from 'react-router';
 import { Input } from '@/components/ui/input';
 import { Separator } from './ui/separator';
 import { auth, db } from '@/lib/firebase-config';
-import { setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
+import { toast } from '@/hooks/use-toast';
 
 interface GoogleRegister {
   email: string;
   name: string;
+  type: 'parent' | 'worker' | '';
 }
 
-const RegisterWithPasswordSchema = z
-  .object({
-    email: z.string().email({ message: 'Invalid email address' }),
-    name: z.string().min(1, { message: 'Name is required' }),
-    password: z.string().min(1, { message: 'Password is required' }),
-    confirmPassword: z
-      .string()
-      .min(1, { message: 'Confirm Password is required' }),
-    gender: z.string().min(1, { message: 'Gender is required' }),
-    dob: z.date(),
-    type: z
-      .union([z.enum(['parent', 'worker']), z.literal('')]) // Allow empty string initially
-      .refine((value) => value !== '', {
-        message: 'Please select either Parent or Worker.',
-      }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+const RegisterWithGoogleSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  name: z.string().min(1, { message: 'Name is required' }),
+  type: z
+    .union([z.enum(['parent', 'worker']), z.literal('')]) // Allow empty string initially
+    .refine((value) => value !== '', {
+      message: 'Please select either Parent or Worker.',
+    }),
+});
 
 export function RegisterWithGoogleForm() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const form = useForm<GoogleRegister>({
-    resolver: zodResolver(RegisterWithPasswordSchema),
+    resolver: zodResolver(RegisterWithGoogleSchema),
     defaultValues: {
       email: '',
       name: '',
+      type: '',
     },
   });
 
@@ -64,11 +56,22 @@ export function RegisterWithGoogleForm() {
   }, [searchParams, form]);
 
   const onSubmit = async (data: GoogleRegister) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication error',
+        description: 'No authenticated user found. Please sign in again.',
+      });
+      navigate('/login');
+      return;
+    }
+
     try {
-      await setDoc(doc(db, 'Users', userCredentials.user.uid), {
+      await setDoc(doc(db, 'Users', currentUser.uid), {
         name: data.name,
         email: data.email,
-        uid: userCredentials.user.uid,
+        uid: currentUser.uid,
         type: data.type,
         dateJoined: new Date(),
       });
@@ -83,7 +86,7 @@ export function RegisterWithGoogleForm() {
         title: 'Sorry, something went wrong creating your account',
         description: 'There was a unknown problem.',
       });
-      await userCredentials.user.delete();
+      await currentUser.delete();
       console.error('User creation rolled back due to Firestore error.');
     }
   };

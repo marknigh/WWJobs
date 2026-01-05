@@ -28,6 +28,7 @@ export interface Job {
   awarded?: string;
   parentId: string;
   entryDate: Date;
+  location: string;
 }
 
 export interface Worker {
@@ -49,6 +50,12 @@ export interface Worker {
   notes: string;
   photoURL: string;
 }
+
+// Form type for UI - uses Date instead of Timestamp
+export type WorkerFormData = Omit<Worker, 'dob' | 'dateJoined'> & {
+  dob: Date;
+  dateJoined: Date;
+};
 
 export interface Review {
   id: string;

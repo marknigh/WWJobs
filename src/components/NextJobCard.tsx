@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { db } from '@/lib/firebase-config';
 import {
   collection,
   query,
   where,
-  orderBy,
   getDocs,
-  Timestamp,
   doc,
   getDoc,
 } from 'firebase/firestore';

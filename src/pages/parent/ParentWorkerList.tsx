@@ -11,8 +11,8 @@ import {
 import { House, Baby, PawPrint, UserRound } from 'lucide-react';
 import { format } from 'date-fns';
 import { Worker } from '@/types/models';
-import { userRound } from 'lucide-react';
 import SpinnerCircle from '@/components/SpinnerCircle';
+
 export default function WorkerList() {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(true);

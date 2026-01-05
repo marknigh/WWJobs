@@ -20,8 +20,19 @@ import { doc, updateDoc, arrayRemove } from 'firebase/firestore';
 // import { ToastAction } from '@/components/ui/toast';
 import { useToast } from '@/hooks/use-toast';
 import { EllipsisVertical } from 'lucide-react';
+import { Job } from '@/types/models';
 
-function WorkerUnApply({ job, userAuth, onJobWidthdrawn }) {
+interface WorkerApplyProps {
+  job: Job;
+  userAuth: any;
+  onJobWidthdrawn: any;
+}
+
+const WorkerUnApply = ({
+  job,
+  userAuth,
+  onJobWidthdrawn,
+}: WorkerApplyProps) => {
   const { toast } = useToast();
 
   async function Withdraw() {
@@ -72,6 +83,6 @@ function WorkerUnApply({ job, userAuth, onJobWidthdrawn }) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
 
 export default WorkerUnApply;

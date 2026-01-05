@@ -27,16 +27,20 @@ export default function WorkerWonJob() {
   useEffect(() => {
     async function fetchJobDetails() {
       try {
-        const jobRef = doc(db, 'Jobs', jobId);
-        const jobDoc = await getDoc(jobRef);
-        if (jobDoc.exists()) {
-          const jobData = jobDoc.data() as Job;
-          setJob(jobData);
+        if (jobId) {
+          const jobRef = doc(db, 'Jobs', jobId);
+          const jobDoc = await getDoc(jobRef);
+          if (jobDoc.exists()) {
+            const jobData = jobDoc.data() as Job;
+            setJob(jobData);
 
-          if (jobData.parentId) {
-            const parentDoc = await getDoc(doc(db, 'Users', jobData.parentId));
-            if (parentDoc.exists()) {
-              setParent(parentDoc.data() as Parent);
+            if (jobData.parentId) {
+              const parentDoc = await getDoc(
+                doc(db, 'Users', jobData.parentId)
+              );
+              if (parentDoc.exists()) {
+                setParent(parentDoc.data() as Parent);
+              }
             }
           }
         }

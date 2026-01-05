@@ -3,7 +3,6 @@ import { useParams } from 'react-router';
 import {
   doc,
   getDoc,
-  Timestamp,
   collection,
   getDocs,
   query,
@@ -22,15 +21,21 @@ import { Baby, House, PawPrint, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReviewWorkerDialog from '@/components/ReviewWorkerDialog';
 import SpinnerCircle from '@/components/SpinnerCircle';
-import { Job, Worker } from '@/types/models';
+import { Job } from '@/types/models';
 import ErrorComponent from '@/components/ErrorComponent';
 
 const ParentJobView: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [workers, setWorkers] = useState<Worker[]>([]);
-  const [awardedWorker, setAwardedWorker] = useState<Worker | null>(null);
+  const [workers, setWorkers] = useState<
+    Array<{ id: string; photoURL: string | null; name: string }>
+  >([]);
+  const [awardedWorker, setAwardedWorker] = useState<{
+    uid: string;
+    photoURL: string | null;
+    name: string;
+  } | null>(null);
   const [reviewExists, setReviewExists] = useState<boolean>(false);
 
   useEffect(() => {
@@ -49,12 +54,12 @@ const ParentJobView: React.FC = () => {
                 const workerDoc = await getDoc(doc(db, 'Users', workerId));
                 if (workerDoc.exists()) {
                   return {
-                    uid: workerId,
+                    id: workerId,
                     photoURL: workerDoc.data().photoURL || null,
                     name: workerDoc.data().name || 'Unknown',
                   };
                 }
-                return { uid: workerId, photoURL: null, name: 'Unknown' };
+                return { id: workerId, photoURL: null, name: 'Unknown' };
               })
             );
             setWorkers(workersData);
@@ -147,10 +152,7 @@ const ParentJobView: React.FC = () => {
               <div className="flex space-x-4">
                 {workers.length > 0 ? (
                   workers.map((worker) => (
-                    <div
-                      key={worker.uid}
-                      className="flex flex-col items-center"
-                    >
+                    <div key={worker.id} className="flex flex-col items-center">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
                           src={worker.photoURL || '/default-avatar.png'}

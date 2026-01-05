@@ -1,15 +1,18 @@
-export const SanitizePicture = (file: File) => {
+export const SanitizePicture = (file: File): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     const filereader = new FileReader();
     const blob = file.slice(0, 4);
     filereader.readAsArrayBuffer(blob);
     filereader.onloadend = function () {
+      if (!filereader.result || !(filereader.result instanceof ArrayBuffer)) {
+        return reject(false);
+      }
       const uint = new Uint8Array(filereader.result);
-      let bytes = [];
+      const bytes: string[] = [];
       uint.forEach((byte) => {
-        bytes.push(byte.toString(16));
+        if (byte) bytes.push(byte.toString(16));
       });
-      let hex = bytes.join('').toUpperCase();
+      const hex = bytes.join('').toUpperCase();
       switch (hex) {
         case '89504E47':
           return resolve(true);

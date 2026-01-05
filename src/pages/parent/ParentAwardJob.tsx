@@ -1,18 +1,32 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase-config';
-import { doc, DocumentData, getDoc, updateDoc } from 'firebase/firestore';
+import {
+  doc,
+  DocumentData,
+  getDoc,
+  Timestamp,
+  updateDoc,
+} from 'firebase/firestore';
 import { useParams } from 'react-router';
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Worker } from '@/types/models';
+import { Worker, Job } from '@/types/models';
+
+async function awardJobToWorker(jobId: string, workerId: string) {
+  const jobRef = doc(db, 'Jobs', jobId);
+
+  await updateDoc(jobRef, {
+    awarded: workerId,
+  });
+}
 
 function ParentAwardJob() {
-  const { jobId } = useParams();
-  const [job, setJob] = useState(null);
+  const { jobId } = useParams<{ jobId: string }>();
+  const [job, setJob] = useState<Job>();
   const [loading, setLoading] = useState(true);
-  const [workers, setWorkers] = useState([]);
+  const [workers, setWorkers] = useState<Worker[]>([]);
 
   async function GetJob() {
     try {
@@ -25,7 +39,7 @@ function ParentAwardJob() {
         setJob(jobSnap.data());
         const appliedWorkers = jobSnap.data().applied || [];
         const workerData: Worker[] = await Promise.all(
-          appliedWorkers.map(async (workerId) => {
+          appliedWorkers.map(async (workerId: string) => {
             const workerRef = doc(db, 'Users', workerId);
             const workerSnap = await getDoc(workerRef);
             if (workerSnap.exists()) {
@@ -51,7 +65,7 @@ function ParentAwardJob() {
     return <div>Loading...</div>; // Or a loading spinner
   }
 
-  const calculateAge = (birthday) => {
+  const calculateAge = (birthday: Timestamp) => {
     const birthDate = birthday.toDate();
     const ageDifMs = Date.now() - birthDate.getTime();
     const ageDate = new Date(ageDifMs);
@@ -60,7 +74,7 @@ function ParentAwardJob() {
 
   return (
     <div className="p-10">
-      <h1 className="text-2xl font-bold mb-6">{job.title}</h1>
+      <h1 className="text-2xl font-bold mb-6">{job ? job.title : ''}</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {workers.map((worker) => (
           <Card key={worker.id}>
@@ -81,8 +95,7 @@ function ParentAwardJob() {
                 </Avatar>
                 <div>
                   <p className="text-sm font-medium">
-                    Age:{' '}
-                    {worker.birthday ? calculateAge(worker.birthday) : 'N/A'}
+                    Age: {worker.dob ? calculateAge(worker.dob) : 'N/A'}
                   </p>
                   <p className="text-sm font-medium">
                     Gender: {worker.gender || 'N/A'}
@@ -97,7 +110,7 @@ function ParentAwardJob() {
               </div>
               <Button
                 className="mt-4 w-full"
-                onClick={() => awardJobToWorker(jobId, worker.id)}
+                onClick={() => jobId && awardJobToWorker(jobId, worker.id)}
               >
                 Award Job
               </Button>
@@ -107,15 +120,6 @@ function ParentAwardJob() {
       </div>
     </div>
   );
-}
-
-async function awardJobToWorker(jobId, workerId) {
-  const jobRef = doc(db, 'Jobs', jobId);
-
-  // Set the "capital" field of the city 'DC'
-  await updateDoc(jobRef, {
-    awarded: workerId,
-  });
 }
 
 export default ParentAwardJob;

@@ -1,26 +1,17 @@
-import { useParams, useNavigate } from 'react-router';
+import { useParams, Navigate } from 'react-router';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import SpinnerCircle from '@/components/SpinnerCircle';
 import { Job } from '@/types/models';
 import useFirebaseAuth from '@/hooks/use-auth-state-change';
-import {
-  doc,
-  getDoc,
-  collection,
-  getDocs,
-  query,
-  where,
-  arrayUnion,
-  updateDoc,
-} from 'firebase/firestore';
+import { doc, getDoc, arrayUnion, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase-config'; // Import Firebase Firestore configuration
 import { toast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 export default function WorkerJobDetails() {
-  const { jobId } = useParams(); // Get job ID from the route
-  const navigate = useNavigate();
+  const { jobId } = useParams<{ jobId: string }>(); // Get job ID from the route
   const { authUser, authLoading } = useFirebaseAuth(); // Get the current authenticated user
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,12 +24,13 @@ export default function WorkerJobDetails() {
     async function fetchJobDetails() {
       setLoading(true);
       try {
-        const jobRef = doc(db, 'Jobs', jobId); // Reference to the job document
+        if (!jobId) return;
+        const jobRef = doc(db, 'Jobs', jobId);
         const jobSnapshot = await getDoc(jobRef);
 
         if (jobSnapshot.exists()) {
           console.log('Job data:', jobSnapshot.data());
-          setJob(jobSnapshot.data() as Job); // Cast the data to the Job type
+          setJob({ id: jobSnapshot.id, ...jobSnapshot.data() } as Job); // Cast the data to the Job type
         } else {
           console.error('Job not found');
           setJob(null);
@@ -89,15 +81,16 @@ export default function WorkerJobDetails() {
   }, [job?.applied]);
 
   const handleApply = async () => {
-    if (!authUser) return;
-
     try {
-      await updateDoc(job.id, { applied: arrayUnion(userAuth.uid) });
-      console.log('🚀 ~ Apply ~ props.userAuth.uid:', userAuth.uid);
-      // toast({
-      //   title: 'You have successfully applied for ' + job.title,
-      //   description: format(new Date(), 'MMM dd, yyyy'),
-      // });
+      if (job && authUser) {
+        const jobRef = doc(db, 'Jobs', job.id);
+        await updateDoc(jobRef, { applied: arrayUnion(authUser.uid) });
+        console.log('🚀 ~ Apply ~ user:', authUser.uid);
+        toast({
+          title: 'You have successfully applied for ' + job.title,
+          description: format(new Date(), 'MMM dd, yyyy'),
+        });
+      }
     } catch (error) {
       console.error('Failed to apply for the job:', error);
       alert('Failed to apply for the job. Please try again.');
@@ -108,9 +101,16 @@ export default function WorkerJobDetails() {
     return <SpinnerCircle />;
   }
 
+  if (!authUser) {
+    return <Navigate to="/login" replace />;
+  }
+
   if (!job) {
     return <p className="text-center mt-8">Job not found.</p>;
   }
+
+  // After this point, TypeScript knows authUser is NOT null
+  // No more null checks needed!
 
   return (
     <div className="mx-4 mt-8">
@@ -120,7 +120,7 @@ export default function WorkerJobDetails() {
           <p className="text-sm mt-2">{job.description}</p>
           <p className="text-sm mt-2">
             Start Date:{' '}
-            {job.startDateTime && new Date(job.startDateTime).toLocaleString()}
+            {job.startDateTime && job.startDateTime.toDate().toLocaleString()}
           </p>
           <p className="text-sm mt-2">
             Location: {job.location || 'Not specified'}

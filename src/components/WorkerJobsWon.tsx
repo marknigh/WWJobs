@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Area, BarChart, Bar, CartesianGrid, XAxis } from 'recharts';
+import { useEffect, useState } from 'react';
+import { BarChart, Bar, CartesianGrid, XAxis } from 'recharts';
 import {
   Card,
   CardContent,
@@ -7,12 +7,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
+import { ChartConfig, ChartContainer } from '@/components/ui/chart';
 import { getWorkerJobsByMonth } from '@/lib/getWorkerJobsByMonth'; // Function to fetch worker jobs data
 
 const chartConfig = {

@@ -107,9 +107,8 @@ export default function WorkersReviews() {
               <Card key={review.jobId}>
                 <CardHeader>
                   <CardTitle>
-                    <p>{review.jobTitle}</p>
                     <p className="text-sm text-gray-500 mt-3">
-                      {review.parentName} -
+                      {review.parentId} -
                       {format(review.createdAt, 'MMMM dd, yyyy')}{' '}
                     </p>
                   </CardTitle>

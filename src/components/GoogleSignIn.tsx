@@ -15,7 +15,9 @@ export const GoogleSignIn = () => {
       // check to see if the user is new
       const docSnap = await getDoc(doc(db, 'Users', user.uid));
       if (!docSnap.exists()) {
-        navigate('/registerwithgoogle?email=' + encodeURIComponent(user.email));
+        navigate(
+          '/registerwithgoogle?email=' + encodeURIComponent(user.email ?? '')
+        );
       } else {
         if (docSnap.data().type === 'worker') {
           navigate('/worker/dashboard');

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { db } from '@/lib/firebase-config';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import useFirebaseAuth from '@/hooks/use-auth-state-change';
-import { EllipsisVertical, CircleCheck, CircleX, Award } from 'lucide-react';
+import { EllipsisVertical, CircleCheck, CircleX } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -148,9 +148,8 @@ const ParentJobList = () => {
                 </TableCell>
                 <TableCell>
                   <JobApplicants
-                    jobId={job.id}
-                    applied={job.applied}
-                    awarded={job.awarded}
+                    applied={job.applied ?? []}
+                    awarded={job.awarded ?? ''}
                   />
                 </TableCell>
                 <TableCell>
@@ -184,7 +183,8 @@ const ParentJobList = () => {
                         </DropdownMenuItem>
                       )}
                       {job.awarded &&
-                        job.startDateTime.toDate() < new Date() && (
+                        job.startDateTime.toDate() < new Date() &&
+                        authUser && (
                           <ReviewWorkerDialog
                             jobId={job.id}
                             awardedWorkerUid={job.awarded}

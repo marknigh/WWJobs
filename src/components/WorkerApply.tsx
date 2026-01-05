@@ -20,8 +20,15 @@ import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { EllipsisVertical } from 'lucide-react';
+import { Job } from '@/types/models';
 
-function WorkerApply({ job, userAuth, onJobApplied }) {
+interface WorkerApplyProps {
+  job: Job;
+  userAuth: any;
+  onJobApplied: any;
+}
+
+const WorkerApply = ({ job, userAuth, onJobApplied }: WorkerApplyProps) => {
   const { toast } = useToast();
 
   async function Apply() {
@@ -71,6 +78,6 @@ function WorkerApply({ job, userAuth, onJobApplied }) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
 
 export default WorkerApply;

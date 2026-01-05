@@ -15,14 +15,7 @@ import { DateTimePicker } from '@/components/DateTimePicker';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  doc,
-  getDoc,
-  collection,
-  addDoc,
-  updateDoc,
-  Timestamp,
-} from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
 import useFirebaseAuth from '@/hooks/use-auth-state-change';
 import { db } from '@/lib/firebase-config';
 import { useParams } from 'react-router';
@@ -77,7 +70,7 @@ export default function ParentJobForm() {
           const jobData: Job = docSnap.data() as Job;
           form.setValue('title', jobData.title);
           form.setValue('description', jobData.description);
-          form.setValue('startDateTime', jobData.startDateTime.toDate());
+          form.setValue('startDateTime', jobData.startDateTime);
           form.setValue('pet', jobData.pet);
           form.setValue('home', jobData.home);
           form.setValue('baby', jobData.baby);
@@ -94,12 +87,12 @@ export default function ParentJobForm() {
     fetchJob();
   }, []);
 
-  const onSubmit = async (data: JobType) => {
-    data.parentId = authUser.uid;
+  const onSubmit = async (data: Job) => {
+    data.parentId = authUser!.uid;
     if (isEditing) {
       try {
         const jobRef = doc(db, 'Jobs', jobId);
-        await updateDoc(jobRef, data);
+        await updateDoc(jobRef, { ...data });
         toast({
           title: 'Job Updated',
           description: 'Your job has been updated successfully.',
@@ -111,7 +104,7 @@ export default function ParentJobForm() {
     } else {
       data.entryDate = new Date();
       try {
-        const docRef = await addDoc(collection(db, 'Jobs'), data);
+        await addDoc(collection(db, 'Jobs'), { ...data });
         toast({
           title: 'Job Created',
           description: 'Your job has been created successfully.',
@@ -123,13 +116,12 @@ export default function ParentJobForm() {
     }
   };
 
-  if (loading) {
+  if (loading && authLoading) {
     return <SpinnerCircle />;
   }
 
   return (
     <div className="flex flex-col items-center justify-center p-4 lg:w-1/3 mx-auto">
-      {console.log(form.formState.errors)}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
           <FormField
@@ -166,7 +158,7 @@ export default function ParentJobForm() {
               <FormItem className="">
                 <FormLabel>Date of Service</FormLabel>
                 <DateTimePicker
-                  value={field.value}
+                  value={field.value.toDate()}
                   onChange={field.onChange}
                   hourCycle={12}
                 />

@@ -13,7 +13,7 @@ interface MonthlyJobsData {
   totalJobs: number;
 }
 
-export async function getWorkerJobsByMonth(uid): Promise<MonthlyJobsData[]> {
+export async function getWorkerJobsByMonth(uid: string): Promise<MonthlyJobsData[]> {
   const now = new Date();
   const fiveMonthsAgo = new Date();
   fiveMonthsAgo.setMonth(now.getMonth() - 5); // Get the date 5 months ago
@@ -22,7 +22,7 @@ export async function getWorkerJobsByMonth(uid): Promise<MonthlyJobsData[]> {
     // Query jobs applied for in the past 5 months
     const jobsQuery = query(
       collection(db, 'Jobs'),
-      where('awarded', '==', uid.uid),
+      where('awarded', '==', uid),
       where('entryDate', '>=', Timestamp.fromDate(fiveMonthsAgo))
     );
     const querySnapshot = await getDocs(jobsQuery);
