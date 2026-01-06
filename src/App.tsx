@@ -4,7 +4,7 @@ import { Toaster } from './components/ui/toaster';
 import AppRoutes from './routes'; // Import routes from the new file
 import { useEffect } from 'react';
 import { getToken, onMessage } from 'firebase/messaging';
-import { messaging } from './lib/firebase-config';
+import { messaging } from '@/lib/firebase-config';
 
 function App() {
   useEffect(() => {
