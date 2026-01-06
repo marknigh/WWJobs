@@ -11,9 +11,8 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "jsx": "react-jsx", // Add this line
-    "module": "es2020", // Update this to a supported module system
-    "target": "es2020", // Optional: Ensure the target matches the module system
-    "types": ["@testing-library/jest-dom"]
+    "jsx": "react-jsx",
+    "module": "es2020",
+    "target": "es2020"
   }
 }
