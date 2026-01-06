@@ -42,9 +42,6 @@ firebase-debug.*.log
 .env.test.local
 .env.production.local
 
-# Firebase config
-src/lib/firebase-config.ts
-
 # VS Code
 .vscode/
 
